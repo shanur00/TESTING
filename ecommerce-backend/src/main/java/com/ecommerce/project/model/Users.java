@@ -73,8 +73,8 @@ public class Users {
 
   @Getter
   @OneToMany(mappedBy = "users", cascade = {
-    CascadeType.PERSIST, CascadeType.MERGE
-  }, orphanRemoval = true)
+    CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE
+  })
   private List<Address> addressesInUsers = new ArrayList<>();
 
   @ToString.Exclude

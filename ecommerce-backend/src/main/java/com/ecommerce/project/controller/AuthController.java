@@ -2,10 +2,9 @@ package com.ecommerce.project.controller;
 
 import com.ecommerce.project.exception.APIException;
 import com.ecommerce.project.exception.ResourceNotFoundException;
-import com.ecommerce.project.model.AppRole;
-import com.ecommerce.project.model.Roles;
-import com.ecommerce.project.model.Seller;
-import com.ecommerce.project.model.Users;
+import com.ecommerce.project.model.*;
+import com.ecommerce.project.payload.AddressDTO;
+import com.ecommerce.project.repository.AddressRepository;
 import com.ecommerce.project.repository.RoleRepository;
 import com.ecommerce.project.repository.UserRepository;
 import com.ecommerce.project.request.LoginRequest;
@@ -15,7 +14,10 @@ import com.ecommerce.project.response.MessageResponse;
 import com.ecommerce.project.response.UserInfoResponse;
 import com.ecommerce.project.security.jwt.JwtUtils;
 import com.ecommerce.project.security.services.UserDetailsImplementation;
+import com.ecommerce.project.service.AddressService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -50,6 +52,12 @@ public class AuthController {
 
   @Autowired
   private RoleRepository roleRepository;
+
+  @Autowired
+  private AddressRepository addressRepository;
+
+  @Autowired
+  private ModelMapper modelMapper;
 
   @PostMapping("/signin")
   public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest){
@@ -143,8 +151,14 @@ public class AuthController {
     );
 
     if(!(user instanceof Seller)){
-      Seller seller = new Seller(user.getUserName(), user.getEmail(), user.getPassword(),
-        sellerSignUpRequest.getStoreName(), sellerSignUpRequest.getPhoneNumber(), sellerSignUpRequest.getName());
+      Seller seller = new Seller();
+      seller.setId(user.getId());
+      seller.setUserName(user.getUserName());
+      seller.setEmail(user.getEmail());
+      seller.setPassword(passwordEncoder.encode(user.getPassword()));
+      seller.setStoreName(sellerSignUpRequest.getStoreName());
+      seller.setPhoneNumber(sellerSignUpRequest.getPhoneNumber());
+      seller.setName(sellerSignUpRequest.getName());
 
       Set<Roles> role = new HashSet<>();
       Roles userRole = roleRepository.findByRoleName(AppRole.ROLE_SELLER).orElseThrow(
@@ -155,10 +169,21 @@ public class AuthController {
 
       seller.setId(user.getId());
       seller.setRolesInUsers(role);
-      //seller.getAddressesInUsers().add(sellerSignUpRequest.getAddressDTO());
+
+      List<AddressDTO> addressDTOS = sellerSignUpRequest.getAddressDTOS();
+      List<Address> addresses = addressDTOS.stream()
+        .map(addressDTO -> {
+          Address address = modelMapper.map(addressDTO, Address.class);
+          address.setUsers(seller);
+          return address;
+        })
+        .collect(Collectors.toList());
+      seller.setAddressesInUsers(addresses);
 
       userRepository.delete(user);
       userRepository.save(seller);
+
+      addressRepository.saveAll(addresses);
 
       return new ResponseEntity<>(new MessageResponse("Seller Information saved Successfully!"), HttpStatus.CREATED);
     }
@@ -182,7 +207,7 @@ public class AuthController {
   public ResponseEntity<?> getUserDetails(Authentication authentication){
     UserDetailsImplementation userDetails = (UserDetailsImplementation) authentication.getPrincipal();
     List<String> roles = userDetails.getAuthorities().stream()
-      .map(item->item.getAuthority())
+      .map(GrantedAuthority::getAuthority)
       .collect(Collectors.toList());
 
     UserInfoResponse response = new UserInfoResponse(userDetails.getId(), userDetails.getUsername(), roles);
