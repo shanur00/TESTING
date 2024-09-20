@@ -14,8 +14,6 @@ import java.util.Set;
 @Entity
 @Data
 @NoArgsConstructor
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
 @Table(name = "users",
   uniqueConstraints = {
   @UniqueConstraint(columnNames = "username"),
@@ -81,4 +79,8 @@ public class Users {
   @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
   orphanRemoval = true)
   private Cart cart;
+
+  @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
+  orphanRemoval = true)
+  private Seller seller;
 }

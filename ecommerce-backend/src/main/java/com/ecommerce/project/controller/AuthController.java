@@ -6,6 +6,7 @@ import com.ecommerce.project.model.*;
 import com.ecommerce.project.payload.AddressDTO;
 import com.ecommerce.project.repository.AddressRepository;
 import com.ecommerce.project.repository.RoleRepository;
+import com.ecommerce.project.repository.SellerRepository;
 import com.ecommerce.project.repository.UserRepository;
 import com.ecommerce.project.request.LoginRequest;
 import com.ecommerce.project.request.SignupRequest;
@@ -58,6 +59,9 @@ public class AuthController {
 
   @Autowired
   private ModelMapper modelMapper;
+
+  @Autowired
+  private SellerRepository sellerRepository;
 
   @PostMapping("/signin")
   public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest){
@@ -144,53 +148,29 @@ public class AuthController {
     return ResponseEntity.ok(new MessageResponse("User Registered Successfully!"));
   }
 
-  @PostMapping("/seller/signup")
-  public ResponseEntity<?> registerSeller(@Valid @RequestBody SellerSignUpRequest sellerSignUpRequest){
+  @PostMapping("/signup/seller")
+  public ResponseEntity<?> registerSeller(@RequestBody @Valid SellerSignUpRequest sellerSignUpRequest){
     Users user = userRepository.findByUserName(sellerSignUpRequest.getUsername()).orElseThrow(
-      ()-> new ResourceNotFoundException("User", "Username",sellerSignUpRequest.getUsername())
+      ()->new APIException("User not Found!")
     );
 
-    if(!(user instanceof Seller)){
-      Seller seller = new Seller();
-      seller.setId(user.getId());
-      seller.setUserName(user.getUserName());
-      seller.setEmail(user.getEmail());
-      seller.setPassword(passwordEncoder.encode(user.getPassword()));
-      seller.setStoreName(sellerSignUpRequest.getStoreName());
-      seller.setPhoneNumber(sellerSignUpRequest.getPhoneNumber());
-      seller.setName(sellerSignUpRequest.getName());
+    Seller seller = new Seller(
+      sellerSignUpRequest.getName(),
+      sellerSignUpRequest.getStoreName(),
+      sellerSignUpRequest.getPhoneNumber()
+    );
 
-      Set<Roles> role = new HashSet<>();
-      Roles userRole = roleRepository.findByRoleName(AppRole.ROLE_SELLER).orElseThrow(
-        ()-> new APIException("Error: Role Not Found!")
-      );
+    AddressDTO addressDTO = sellerSignUpRequest.getAddressDTO();
+    Address address = modelMapper.map(addressDTO, Address.class);
+    address.setUsers(user);
+    addressRepository.save(address);
 
-      role.add(userRole);
+    seller.setUser(user);
+    user.setSeller(seller);
 
-      seller.setId(user.getId());
-      seller.setRolesInUsers(role);
+    sellerRepository.save(seller);
 
-      List<AddressDTO> addressDTOS = sellerSignUpRequest.getAddressDTOS();
-      List<Address> addresses = addressDTOS.stream()
-        .map(addressDTO -> {
-          Address address = modelMapper.map(addressDTO, Address.class);
-          address.setUsers(seller);
-          return address;
-        })
-        .collect(Collectors.toList());
-      seller.setAddressesInUsers(addresses);
-
-      userRepository.delete(user);
-      userRepository.save(seller);
-
-      addressRepository.saveAll(addresses);
-
-      return new ResponseEntity<>(new MessageResponse("Seller Information saved Successfully!"), HttpStatus.CREATED);
-    }
-
-    else{
-      return new ResponseEntity<>("User is already Seller", HttpStatus.CONFLICT);
-    }
+    return new ResponseEntity<>(new MessageResponse("Seller Registered Successfully!"), HttpStatus.OK);
   }
 
   @GetMapping("/username")

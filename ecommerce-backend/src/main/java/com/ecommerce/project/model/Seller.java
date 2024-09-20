@@ -2,15 +2,20 @@ package com.ecommerce.project.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@EqualsAndHashCode(callSuper = true)
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Data
 @NoArgsConstructor
 @DiscriminatorValue("SELLER")
-public class Seller extends Users{
+public class Seller{
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long sellerId;
 
   @Column(name = "name")
   private String name;
@@ -21,8 +26,17 @@ public class Seller extends Users{
   @Column(name = "phone_number")
   private String phoneNumber;
 
-  public Seller(String username, String email, String password, String storeName, String phoneNumber, String name) {
-    super(username, email, password);
+  @OneToOne
+  @JoinColumn(name = "user_id")
+  private Users user;
+
+//  @Getter
+//  @OneToMany(mappedBy = "users", cascade = {
+//    CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE
+//  })
+//  private List<Address> addressesInSeller = new ArrayList<>();
+
+  public Seller(String storeName, String phoneNumber, String name) {
     this.storeName = storeName;
     this.phoneNumber = phoneNumber;
     this.name = name;

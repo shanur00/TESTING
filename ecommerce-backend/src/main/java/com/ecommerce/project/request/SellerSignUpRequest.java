@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -16,5 +14,5 @@ public class SellerSignUpRequest {
   private String name;
   private String storeName;
   private String phoneNumber;
-  private List<AddressDTO> addressDTOS = new ArrayList<>();
+  private AddressDTO addressDTO;
 }

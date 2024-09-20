@@ -53,6 +53,11 @@ public class Address {
   @OneToMany(mappedBy = "address", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
   private List<Orders> orders = new ArrayList<>();
 
+//  @ToString.Exclude
+//  @ManyToOne
+//  @JoinColumn(name = "seller_id")
+//  private Seller seller;
+
   public Address(String street, String buildingName, String city, String state, String country, String zipCode) {
     this.street = street;
     this.buildingName = buildingName;
