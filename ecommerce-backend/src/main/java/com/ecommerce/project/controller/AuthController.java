@@ -1,7 +1,6 @@
 package com.ecommerce.project.controller;
 
 import com.ecommerce.project.exception.APIException;
-import com.ecommerce.project.exception.ResourceNotFoundException;
 import com.ecommerce.project.model.*;
 import com.ecommerce.project.payload.AddressDTO;
 import com.ecommerce.project.repository.AddressRepository;
@@ -15,8 +14,6 @@ import com.ecommerce.project.response.MessageResponse;
 import com.ecommerce.project.response.UserInfoResponse;
 import com.ecommerce.project.security.jwt.JwtUtils;
 import com.ecommerce.project.security.services.UserDetailsImplementation;
-import com.ecommerce.project.service.AddressService;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;

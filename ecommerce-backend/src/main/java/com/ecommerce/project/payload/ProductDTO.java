@@ -3,6 +3,7 @@ package com.ecommerce.project.payload;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @NoArgsConstructor
@@ -15,5 +16,5 @@ public class ProductDTO {
   private Integer quantity;
   private double price;
   private double discount;
-  private double spacialPrice;
+  private double specialPrice;
 }

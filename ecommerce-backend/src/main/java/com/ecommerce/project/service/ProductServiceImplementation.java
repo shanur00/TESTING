@@ -14,6 +14,7 @@ import com.ecommerce.project.repository.CartRepository;
 import com.ecommerce.project.repository.CategoryRepository;
 import com.ecommerce.project.repository.ProductRepository;
 import com.ecommerce.project.utils.AuthUtil;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,15 +53,16 @@ public class ProductServiceImplementation implements ProductService {
 
   @Value("${project.image}")
   private String path;
+
   @Override
-  public ProductDTO addProduct(Long categoryID, ProductDTO productDTO) {
+  @Transactional
+  public ProductDTO addProduct(Long categoryID, ProductDTO productDTO){
     Product product = modelMapper.map(productDTO, Product.class);
 
     Category category = categoryRepository.findById(categoryID)
       .orElseThrow(()->new ResourceNotFoundException("Category", "CategoryId", categoryID));
 
     List<Product> products = category.getProducts();
-    boolean ifProductNotPresent = false;
     for (Product value : products) {
       if (value.getProductName().equals(product.getProductName())) {
         throw new APIException("Product with the name " + product.getProductName() + " already exists");
@@ -68,10 +70,11 @@ public class ProductServiceImplementation implements ProductService {
     }
 
     product.setCategory(category);
-    double spacialPrice = product.getPrice() - (product.getDiscount()*0.01) * product.getPrice();
-    product.setSpacialPrice(spacialPrice);
-    product.setImage("default.png");
+    double specialPrice = product.getPrice() - (product.getDiscount()*0.01) * product.getPrice();
+    product.setSpecialPrice(specialPrice);
+
     Product savedProduct = productRepository.save(product);
+
     return modelMapper.map(savedProduct, ProductDTO.class);
   }
 
@@ -148,7 +151,7 @@ public class ProductServiceImplementation implements ProductService {
     myProduct.setQuantity(product.getQuantity());
     myProduct.setDiscount(product.getDiscount());
     myProduct.setPrice(product.getPrice());
-    myProduct.setSpacialPrice(product.getSpacialPrice());
+    myProduct.setSpecialPrice(product.getSpecialPrice());
 
     Product savedProduct = productRepository.save(myProduct);
 
@@ -197,9 +200,4 @@ public class ProductServiceImplementation implements ProductService {
 
     return modelMapper.map(updatedProduct, ProductDTO.class);
   }
-
-//  @Override
-//  public ProductResponse searchProductByUsersKeyword(Users user, String keyword, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
-//
-//  }
 }

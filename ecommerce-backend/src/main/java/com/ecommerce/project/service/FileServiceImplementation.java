@@ -10,8 +10,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +32,7 @@ public class FileServiceImplementation implements FileService{
 
     String randomId = UUID.randomUUID().toString();
 
+    assert originalFileName != null;
     String fileName = randomId.concat(originalFileName.substring(originalFileName.lastIndexOf(".")));
 
     String filePath = path + File.separator + fileName;
@@ -39,6 +43,25 @@ public class FileServiceImplementation implements FileService{
     }
 
     Files.copy(file.getInputStream(), Paths.get(filePath));
+    return fileName;
+  }
+
+  @Override
+  public String saveImage(String url, String path) throws IOException {
+
+    String randomId = UUID.randomUUID().toString();
+    String fileName = randomId.concat(".png");
+    String filePath = path + File.separator + fileName;
+
+    File folder = new File(path);
+    if(!folder.exists()){
+      folder.mkdir();
+    }
+
+    try(InputStream in = new URL(url).openStream()){
+      Files.copy(in, Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
+    }
+
     return fileName;
   }
 

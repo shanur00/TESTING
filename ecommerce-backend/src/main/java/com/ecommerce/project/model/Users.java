@@ -37,7 +37,7 @@ public class Users {
   @Column(name = "email")
   private String email;
 
-  @NotBlank
+  //@NotBlank
   @Size(max = 120)
   @Column(name = "password")
   private String password;
@@ -45,10 +45,20 @@ public class Users {
   @Column(name = "enabled")
   private boolean enabled;
 
+  private String signUpMethod;
+
+  private String image;
+
   public Users(String username, String email, String password) {
     this.userName = username;
     this.email = email;
     this.password = password;
+    this.enabled = true;
+  }
+
+  public Users(String userName, String email){
+    this.userName = userName;
+    this.email = email;
     this.enabled = true;
   }
 

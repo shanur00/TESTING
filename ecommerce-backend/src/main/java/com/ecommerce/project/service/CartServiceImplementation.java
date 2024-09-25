@@ -72,7 +72,7 @@ public class CartServiceImplementation implements CartService{
     cartItemRepository.save(newCartItem);
 
     product.setQuantity(product.getQuantity()-quantity);
-    cart.setTotalPrice(cart.getTotalPrice()+(product.getSpacialPrice()*quantity));
+    cart.setTotalPrice(cart.getTotalPrice()+(product.getSpecialPrice()*quantity));
     cartRepository.save(cart);
 
     CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
@@ -145,7 +145,7 @@ public class CartServiceImplementation implements CartService{
       throw new ResourceNotFoundException("Product","productID",productId);
     }
 
-    cart.setTotalPrice(cart.getTotalPrice()-(cartItem.getProduct().getSpacialPrice()*cartItem.getQuantity()));
+    cart.setTotalPrice(cart.getTotalPrice()-(cartItem.getProduct().getSpecialPrice()*cartItem.getQuantity()));
 
     cartItemRepository.deleteCartItemByProductIdAndCartId(cartId, productId);
 
@@ -192,7 +192,7 @@ public class CartServiceImplementation implements CartService{
     }
 
     else {
-      cartItem.setProductPrice(product.getSpacialPrice());
+      cartItem.setProductPrice(product.getSpecialPrice());
       cartItem.setQuantity(cartItem.getQuantity() + quantity);
       cartItem.setDiscount(product.getDiscount());
 
@@ -241,7 +241,7 @@ public class CartServiceImplementation implements CartService{
 
     double cartPrice = cart.getTotalPrice() - (cartItem.getProductPrice()*cartItem.getQuantity());
 
-    cartItem.setProductPrice(product.getSpacialPrice());
+    cartItem.setProductPrice(product.getSpecialPrice());
 
     cart.setTotalPrice(cartPrice + (cartItem.getProductPrice()*cartItem.getQuantity()));
 

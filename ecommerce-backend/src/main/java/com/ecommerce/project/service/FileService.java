@@ -12,4 +12,6 @@ public interface FileService {
   String uploadImage(String path, MultipartFile file) throws IOException;
 
   ProductResponse getAllResponse (List<Product>products, Page<Product> productPage);
+
+  String saveImage(String url, String path) throws IOException;
 }

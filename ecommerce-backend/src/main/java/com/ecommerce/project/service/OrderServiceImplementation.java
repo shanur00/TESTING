@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class OrderImplementation implements OrderService{
+public class OrderServiceImplementation implements OrderService{
   @Autowired
   private OrderRepository orderRepository;
 

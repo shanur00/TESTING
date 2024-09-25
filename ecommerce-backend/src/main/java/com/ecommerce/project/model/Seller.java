@@ -30,11 +30,6 @@ public class Seller{
   @JoinColumn(name = "user_id")
   private Users user;
 
-//  @Getter
-//  @OneToMany(mappedBy = "users", cascade = {
-//    CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE
-//  })
-//  private List<Address> addressesInSeller = new ArrayList<>();
 
   public Seller(String storeName, String phoneNumber, String name) {
     this.storeName = storeName;

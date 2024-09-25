@@ -15,6 +15,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/*
+   Your custom AuthEntryPointJwt is configured to always return a 401 Unauthorized response with a JSON body.
+   This is appropriate for API requests but not for browser-based requests that should redirect to a login page.
+
+   You've set this AuthEntryPointJwt as the global exception handling mechanism for all unauthorized requests in WebConfig class,
+   including those that should be handled by OAuth2 and form login.
+ */
+
 @Component
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 

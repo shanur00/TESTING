@@ -31,7 +31,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(HttpServletRequest request,
-                                  @Nonnull HttpServletResponse response, @Nonnull FilterChain filterChain)
+                                   HttpServletResponse response,  FilterChain filterChain)
     throws ServletException, IOException {
     logger.debug("AuthTokenFilter Called for the URI: {}", request.getRequestURI());
 

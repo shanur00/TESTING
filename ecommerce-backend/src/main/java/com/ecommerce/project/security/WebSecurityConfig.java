@@ -7,11 +7,13 @@ import com.ecommerce.project.repository.RoleRepository;
 import com.ecommerce.project.repository.UserRepository;
 import com.ecommerce.project.security.jwt.AuthEntryPointJwt;
 import com.ecommerce.project.security.jwt.AuthTokenFilter;
+import com.ecommerce.project.security.jwt.Oauth2LoginSuccessHandler;
 import com.ecommerce.project.security.services.UserDetailsServiceImplementation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -25,6 +27,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.Set;
 
@@ -38,6 +41,11 @@ public class WebSecurityConfig {
 
   @Autowired
   AuthEntryPointJwt unauthorizedHandler;
+
+  @Lazy
+  @Autowired
+  Oauth2LoginSuccessHandler oauth2LoginSuccessHandler;
+
 
   @Bean
   public AuthTokenFilter authenticationJwtTokenFilter(){
@@ -57,30 +65,47 @@ public class WebSecurityConfig {
 
   @Bean
   public SecurityFilterChain filterChain (HttpSecurity http) throws Exception{
-    http.csrf(AbstractHttpConfigurer::disable)
-
-      .exceptionHandling(exception-> exception.authenticationEntryPoint(
-        unauthorizedHandler))
-      .sessionManagement(session -> session.sessionCreationPolicy(
-        SessionCreationPolicy.STATELESS))
-      .authorizeHttpRequests(auth ->
-          auth.requestMatchers("/api/auth/**").permitAll()
-            .requestMatchers("/v3/api-docs/**").permitAll()
-            .requestMatchers("/h2-console/**").permitAll()
-            //.requestMatchers("/api/admin/**").permitAll()
-            //.requestMatchers("/api/public/**").permitAll()
-            .requestMatchers("/swagger-ui/**").permitAll()
-            .requestMatchers("/api/test/**").permitAll()
-            .requestMatchers("/images/**").permitAll()
-            .anyRequest().authenticated()
-        );
+//    http
+//      .csrf(AbstractHttpConfigurer::disable)
+//      .exceptionHandling(exception -> exception.defaultAuthenticationEntryPointFor(
+//        unauthorizedHandler,
+//        new AntPathRequestMatcher("/api/**")
+//      ))
+//      .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+//      .authorizeHttpRequests(registry -> {
+//        registry.requestMatchers("/").permitAll();
+//        registry.anyRequest().authenticated();
+//      }).oauth2Login(Customizer.withDefaults());
+//
+//    return http.build();
+    http
+      .csrf(AbstractHttpConfigurer::disable)
+      .exceptionHandling(exception -> exception.defaultAuthenticationEntryPointFor(
+        unauthorizedHandler,
+        new AntPathRequestMatcher("/api/**")
+      ))
+      .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+      .authorizeHttpRequests(registry -> {
+        registry.requestMatchers("/", "/login", "/oauth2/**").permitAll();
+        registry.requestMatchers("/api/**").permitAll();
+        registry.requestMatchers("/v3/api-docs/**").permitAll();
+        registry.requestMatchers("/h2-console/**").permitAll();
+        //.requestMatchers("/api/admin/**").permitAll();
+        //.requestMatchers("/api/public/**").permitAll();
+        registry.requestMatchers("/swagger-ui/**").permitAll();
+        registry.requestMatchers("/api/test/**").permitAll() ;
+        registry.requestMatchers("/images/**").permitAll();
+        registry.anyRequest().authenticated();
+      }).oauth2Login(oauth2 -> {
+        oauth2.successHandler(oauth2LoginSuccessHandler);
+      });
 
     http.authenticationProvider(authenticationProvider());
 
     http.addFilterBefore(authenticationJwtTokenFilter(),
       UsernamePasswordAuthenticationFilter.class);
 
-    http.headers(headers-> headers.frameOptions(
+    http.headers(header -> header.frameOptions(
       HeadersConfigurer.FrameOptionsConfig::sameOrigin
     ));
 
